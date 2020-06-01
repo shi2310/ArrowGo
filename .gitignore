@@ -1,0 +1,6 @@
+*.exe*
+*.tmp
+*.zip
+*.tar
+*.bak
+/upload
