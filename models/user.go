@@ -28,3 +28,10 @@ func GetUserByUserName(userName string) (v *User, err error) {
 	}
 	return &user, nil
 }
+
+// ChangePwd ...
+func ChangePwd(m *User) error {
+	db := ConnectDB()
+	defer db.Close()
+	return db.Model(m).Update("pwd", m.Pwd).Error
+}

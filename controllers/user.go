@@ -108,3 +108,33 @@ func AddUser(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, result)
 }
+
+type ChangePwdModel struct {
+	oldPwd string
+	newPwd string
+}
+
+// ChangePwd 修改密码
+func ChangePwd(c *gin.Context) {
+	result := models.ResponseData{
+		Success: true,
+	}
+	userName := c.MustGet("username").(string)
+	user, err := models.GetUserByUserName(userName)
+	if err != nil {
+		result.Success = false
+		result.Msg = "用户不存在"
+		c.JSON(http.StatusBadRequest, result)
+		return
+	}
+	pwd := c.PostForm("pwd")
+	fmt.Println("ceshi" + pwd)
+	user.Pwd = fmt.Sprintf("%x", md5.Sum([]byte(user.UserName+pwd)))
+	if err := models.ChangePwd(user); err != nil {
+		result.Success = false
+		result.Msg = "数据库异常"
+		c.JSON(http.StatusInternalServerError, result)
+		return
+	}
+	c.JSON(http.StatusOK, result)
+}

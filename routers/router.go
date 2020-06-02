@@ -15,6 +15,7 @@ func InitRouter() *gin.Engine {
 	router.POST("/user/register", controllers.Register)
 	router.POST("/user/login", controllers.Login)
 	router.Use(middleware.JWTAuth()) // 后面的action加入token验证
-	router.GET("/user/Add", controllers.AddUser)
+	router.POST("/user/add", controllers.AddUser)
+	router.POST("/user/changePwd", controllers.ChangePwd)
 	return router
 }
