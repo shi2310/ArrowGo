@@ -13,13 +13,17 @@ type User struct {
 
 // AddUser ...
 func AddUser(m *User) error {
+	db := ConnectDB()
+	defer db.Close()
 	return db.Create(&m).Error
 }
 
 // GetUserByUserName ...
 func GetUserByUserName(userName string) (v *User, err error) {
 	var user User
-	if err := db.Where("username = ?", userName).First(&user).Error; err != nil {
+	db := ConnectDB()
+	defer db.Close()
+	if err := db.Where("user_name = ?", userName).First(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil

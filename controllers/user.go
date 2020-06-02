@@ -18,7 +18,7 @@ func Register(c *gin.Context) {
 	var user models.User
 	if err := c.ShouldBindJSON(&user); err != nil {
 		result.Success = false
-		result.Msg = "解析失败"
+		result.Msg = "解析失败" + err.Error()
 		c.JSON(http.StatusUnauthorized, result)
 		return
 	}
@@ -28,9 +28,10 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, result)
 		return
 	}
+	user.Pwd = fmt.Sprintf("%x", md5.Sum([]byte(user.UserName+user.Pwd)))
 	if err := models.AddUser(&user); err != nil {
 		result.Success = false
-		result.Msg = "数据库异常"
+		result.Msg = "数据库异常" + err.Error()
 		c.JSON(http.StatusInternalServerError, result)
 		return
 	}
@@ -42,21 +43,26 @@ func Login(c *gin.Context) {
 	result := models.ResponseData{
 		Success: true,
 	}
-	username := c.PostForm("username")
-	pwd := c.PostForm("password")
-	if len(username) == 0 || len(pwd) == 0 {
+	var model models.User
+	if err := c.ShouldBindJSON(&model); err != nil {
+		result.Success = false
+		result.Msg = "解析失败" + err.Error()
+		c.JSON(http.StatusUnauthorized, result)
+		return
+	}
+	if len(model.UserName) == 0 || len(model.Pwd) == 0 {
 		result.Success = false
 		result.Msg = "账号或密码不能为空"
 		c.JSON(http.StatusOK, result)
 	} else {
-		user, err := models.GetUserByUserName(username)
+		user, err := models.GetUserByUserName(model.UserName)
 		if err != nil {
 			result.Success = false
-			result.Msg = "用户不存在"
+			result.Msg = "用户不存在" + err.Error()
 			c.JSON(http.StatusOK, result)
 			return
 		}
-		password := fmt.Sprintf("%x", md5.Sum([]byte(user.UserName+pwd)))
+		password := fmt.Sprintf("%x", md5.Sum([]byte(user.UserName+model.Pwd)))
 		if user.Pwd != password {
 			result.Success = false
 			result.Msg = "密码错误"
