@@ -8,7 +8,8 @@ import (
 type User struct {
 	gorm.Model
 	UserName string `gorm:"size:255;unique" binding:"required"`
-	Pwd      string `gorm:"column:pwd;size:255" binding:"required"`
+	Pwd      string `gorm:"column:pwd;size:255;not null" binding:"required"`
+	Photo    string `gorm:"type:text"`
 }
 
 // AddUser ...

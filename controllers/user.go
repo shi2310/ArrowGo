@@ -109,11 +109,6 @@ func AddUser(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-type ChangePwdModel struct {
-	oldPwd string
-	newPwd string
-}
-
 // ChangePwd 修改密码
 func ChangePwd(c *gin.Context) {
 	result := models.ResponseData{
@@ -128,7 +123,6 @@ func ChangePwd(c *gin.Context) {
 		return
 	}
 	pwd := c.PostForm("pwd")
-	fmt.Println("ceshi" + pwd)
 	user.Pwd = fmt.Sprintf("%x", md5.Sum([]byte(user.UserName+pwd)))
 	if err := models.ChangePwd(user); err != nil {
 		result.Success = false
