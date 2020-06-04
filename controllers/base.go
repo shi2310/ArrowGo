@@ -41,12 +41,9 @@ func FormUpload(context *gin.Context, field string) (*models.File, error) {
 }
 
 // Base64Upload Base64上传文件方法
-func Base64Upload(context *gin.Context) (*models.File, error) {
-	bytes, err := ioutil.ReadAll(context.Request.Body)
-	if err != nil {
-		return nil, err
-	}
-	strs := strings.Split(string(bytes), ",")
+func Base64Upload(context *gin.Context, field string) (*models.File, error) {
+	fileStr := context.PostForm(field)
+	strs := strings.Split(fileStr, ",")
 	head := strs[0]
 	body := strs[1]
 	start := strings.LastIndex(head, "/")
