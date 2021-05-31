@@ -14,16 +14,12 @@ type File struct {
 
 // AddFile ...
 func AddFile(m *File) error {
-	db := ConnectDB()
-	defer db.Close()
 	return db.Create(&m).Error
 }
 
 // GetFileByMD5 ...
 func GetFileByMD5(md5 string) (v *File, err error) {
 	var file File
-	db := ConnectDB()
-	defer db.Close()
 	if err := db.Where("filemd5 = ?", md5).First(&file).Error; err != nil {
 		return nil, err
 	}
