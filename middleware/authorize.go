@@ -17,11 +17,10 @@ func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.Request.Header.Get("Authorization")
 		if authHeader == "" {
-			c.JSON(http.StatusOK, models.ResponseData{
+			c.JSON(http.StatusUnauthorized, models.ResponseData{
 				Success: false,
 				Msg:     "请求未携带token，无权限访问",
 			})
-			c.Abort()
 			return
 		}
 
@@ -30,21 +29,19 @@ func JWTAuth() gin.HandlerFunc {
 		// 按空格分割
 		parts := strings.SplitN(authHeader, " ", 2)
 		if !(len(parts) == 2 && parts[0] == "Bearer") {
-			c.JSON(http.StatusOK, models.ResponseData{
+			c.JSON(http.StatusBadRequest, models.ResponseData{
 				Success: false,
 				Msg:     "请求头中auth格式有误",
 			})
-			c.Abort()
 			return
 		}
 		// parts[1]是获取到的tokenString，我们使用之前定义好的解析JWT的函数来解析它
 		mc, err := ParseToken(parts[1])
 		if err != nil {
-			c.JSON(http.StatusOK, models.ResponseData{
+			c.JSON(http.StatusUnauthorized, models.ResponseData{
 				Success: false,
 				Msg:     "无效的Token",
 			})
-			c.Abort()
 			return
 		}
 		log.Print("get username: ", mc.Username)

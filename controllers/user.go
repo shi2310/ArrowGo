@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"ArrowGo/dto"
 	"ArrowGo/middleware"
 	"ArrowGo/models"
 	"crypto/md5"
@@ -10,25 +11,34 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Register 注册
+// @Summary 注册
+// @Description 注册接口
+// @Accept  json
+// @Produce  json
+// @Param model body dto.UserDTO true "用户注册模型"
+// @Success 200 {object} models.ResponseData {"success":true,"data":{},"msg":null}
+// @Router /account/register [post]
 func Register(c *gin.Context) {
 	result := models.ResponseData{
 		Success: true,
 	}
-	var user models.User
-	if err := c.ShouldBindJSON(&user); err != nil {
+	var model dto.UserDTO
+	if err := c.ShouldBindJSON(&model); err != nil {
 		result.Success = false
 		result.Msg = "解析失败" + err.Error()
 		c.JSON(http.StatusUnauthorized, result)
 		return
 	}
-	if _, err := models.GetUserByUserName(user.UserName); err == nil {
+	if _, err := models.GetUserByUserName(model.UserName); err == nil {
 		result.Success = false
 		result.Msg = "用户已存在"
 		c.JSON(http.StatusBadRequest, result)
 		return
 	}
-	user.Pwd = fmt.Sprintf("%x", md5.Sum([]byte(user.UserName+user.Pwd)))
+
+	var user models.User
+	user.UserName = model.UserName
+	user.Pwd = fmt.Sprintf("%x", md5.Sum([]byte(model.UserName+model.Pwd)))
 	if err := models.AddUser(&user); err != nil {
 		result.Success = false
 		result.Msg = "数据库异常" + err.Error()
@@ -38,18 +48,24 @@ func Register(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-// Login 登录
+// @Summary 登录
+// @Accept  json
+// @Produce  json
+// @Param model body dto.LoginDTO true "登录模型"
+// @Success 200 {object} models.ResponseData {"success":true,"data":{},"msg":null}
+// @Router /account/login [post]
 func Login(c *gin.Context) {
 	result := models.ResponseData{
 		Success: true,
 	}
-	var model models.User
+	var model dto.LoginDTO
 	if err := c.ShouldBindJSON(&model); err != nil {
 		result.Success = false
 		result.Msg = "解析失败" + err.Error()
 		c.JSON(http.StatusUnauthorized, result)
 		return
 	}
+
 	if len(model.UserName) == 0 || len(model.Pwd) == 0 {
 		result.Success = false
 		result.Msg = "账号或密码不能为空"
@@ -82,24 +98,35 @@ func Login(c *gin.Context) {
 	}
 }
 
-// AddUser 用户添加
+// @Summary 添加用户
+// @Accept multipart/form-data
+// @Produce  json
+// @Param Authorization	header string true "Toke:格式如Bearer 31a165baebe6dec616b1f8f3207b4273"
+// @Param username formData string true "用户名"
+// @Param pwd formData string true "密码"
+// @Param photo formData file false "图像"
+// @Success 200 {object} models.ResponseData {"success":true,"data":{},"msg":null}
+// @Router /user/add [post]
 func AddUser(c *gin.Context) {
 	var user models.User
 	result := models.ResponseData{
 		Success: true,
 	}
-	if err := c.ShouldBindJSON(&user); err != nil {
-		result.Success = false
-		result.Msg = "解析失败"
-		c.JSON(http.StatusUnauthorized, result)
-		return
-	}
-	if _, err := models.GetUserByUserName(user.UserName); err == nil {
+	username := c.PostForm("username")
+	if _, err := models.GetUserByUserName(username); err == nil {
 		result.Success = false
 		result.Msg = "用户已存在"
 		c.JSON(http.StatusOK, result)
 		return
 	}
+
+	user.UserName = username
+	user.Pwd = fmt.Sprintf("%x", md5.Sum([]byte(username+c.PostForm("pwd"))))
+	file, ex := FormUpload(c, "photo")
+	if ex == nil {
+		user.Photo = file.FileMd5
+	}
+
 	if err := models.AddUser(&user); err != nil {
 		result.Success = false
 		result.Msg = "数据库异常"
@@ -109,7 +136,13 @@ func AddUser(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-// ChangePwd 修改密码
+// @Summary 修改个人密码
+// @Accept  json
+// @Produce  json
+// @Param Authorization	header string true "Toke:格式如Bearer 31a165baebe6dec616b1f8f3207b4273"
+// @Param model body dto.ChangePwdDTO true "新密码"
+// @Success 200 {object} models.ResponseData {"success":true,"data":{},"msg":null}
+// @Router /user/changePwd [PUT]
 func ChangePwd(c *gin.Context) {
 	result := models.ResponseData{
 		Success: true,
@@ -119,11 +152,19 @@ func ChangePwd(c *gin.Context) {
 	if err != nil {
 		result.Success = false
 		result.Msg = "用户不存在"
+		c.JSON(http.StatusUnauthorized, result)
+		return
+	}
+
+	var model dto.ChangePwdDTO
+	if err := c.ShouldBindJSON(&model); err != nil {
+		result.Success = false
+		result.Msg = "解析失败" + err.Error()
 		c.JSON(http.StatusBadRequest, result)
 		return
 	}
-	pwd := c.PostForm("pwd")
-	user.Pwd = fmt.Sprintf("%x", md5.Sum([]byte(user.UserName+pwd)))
+
+	user.Pwd = fmt.Sprintf("%x", md5.Sum([]byte(user.UserName+model.Pwd)))
 	if err := models.ChangePwd(user); err != nil {
 		result.Success = false
 		result.Msg = "数据库异常"

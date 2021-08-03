@@ -1,0 +1,138 @@
+definitions:
+  dto.ChangePwdDTO:
+    properties:
+      pwd:
+        type: string
+    required:
+    - pwd
+    type: object
+  dto.LoginDTO:
+    properties:
+      pwd:
+        type: string
+      userName:
+        type: string
+    required:
+    - pwd
+    - userName
+    type: object
+  dto.UserDTO:
+    properties:
+      photo:
+        type: string
+      pwd:
+        type: string
+      userName:
+        type: string
+    required:
+    - pwd
+    - userName
+    type: object
+  models.ResponseData:
+    properties:
+      data:
+        type: object
+      msg:
+        type: string
+      success:
+        type: boolean
+    type: object
+info:
+  contact: {}
+paths:
+  /account/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 登录模型
+        in: body
+        name: model
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success":true,"data":{},"msg":null}
+          schema:
+            $ref: '#/definitions/models.ResponseData'
+      summary: 登录
+  /account/register:
+    post:
+      consumes:
+      - application/json
+      description: 注册接口
+      parameters:
+      - description: 用户注册模型
+        in: body
+        name: model
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success":true,"data":{},"msg":null}
+          schema:
+            $ref: '#/definitions/models.ResponseData'
+      summary: 注册
+  /user/add:
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: Toke:格式如Bearer 31a165baebe6dec616b1f8f3207b4273
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 用户名
+        in: formData
+        name: username
+        required: true
+        type: string
+      - description: 密码
+        in: formData
+        name: pwd
+        required: true
+        type: string
+      - description: 图像
+        in: formData
+        name: photo
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success":true,"data":{},"msg":null}
+          schema:
+            $ref: '#/definitions/models.ResponseData'
+      summary: 添加用户
+  /user/changePwd:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Toke:格式如Bearer 31a165baebe6dec616b1f8f3207b4273
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 新密码
+        in: body
+        name: model
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ChangePwdDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success":true,"data":{},"msg":null}
+          schema:
+            $ref: '#/definitions/models.ResponseData'
+      summary: 修改个人密码
+swagger: "2.0"
