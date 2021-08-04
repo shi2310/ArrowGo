@@ -30,7 +30,7 @@ go run main.go
 
 ## Docker 部署
 
-1. windows 平台交叉编译
+1. win10 交叉编译 linux
 
 ```
 $env:GOOS="linux"
