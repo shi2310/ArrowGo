@@ -9,7 +9,7 @@ var db *gorm.DB
 
 // InitDB 初始化数据库
 func InitDB() *gorm.DB {
-	_db, err := gorm.Open("mysql", "root:123456@tcp(127.0.0.1:3306)/labelimg?charset=utf8mb4&parseTime=True&loc=Local")
+	_db, err := gorm.Open("mysql", "root:mr123321@tcp(192.168.1.10:3306)/arrow?charset=utf8mb4&parseTime=True&loc=Local")
 	if err != nil {
 		_db.Close()
 	}
