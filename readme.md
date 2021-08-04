@@ -25,5 +25,5 @@ swag init --parseDependency --parseInternal
 ## 运行项目
 
 ```
-go rum main.go
+go run main.go
 ```
